@@ -9,7 +9,7 @@ import { PackagingCompliance } from "./components/packaging-compliance"
 import { HygieneRating } from "../../dashboard/components/hygiene-rating"
 import { OwnerInformation } from "../../dashboard/components/owner-information"
 import { LabReports } from "../../dashboard/components/lab-reports"
-import { RestaurantCertifications } from "../../dashboard/components/restaurant-certifications"
+//import { RestaurantCertifications } from "../../dashboard/components/restaurant-certifications"
 import { TeamSection } from "../../dashboard/components/team-section"
 import { FacilityPhotos } from "../../dashboard/components/facility-photos"
 import { ReviewsSection } from "../../dashboard/components/reviews-section"
@@ -48,7 +48,7 @@ export default function ManufacturingDashboard() {
         <PackagingCompliance businessId={businessId} />
         <OwnerInformation businessId={businessId} />
         <LabReports businessId={businessId} />
-        <RestaurantCertifications businessId={businessId} />
+        {/*<RestaurantCertifications businessId={businessId} />*/}
         <TeamSection businessId={businessId} />
         <FacilityPhotos businessId={businessId} />
         <ReviewsSection businessId={businessId} />

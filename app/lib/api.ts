@@ -41,20 +41,25 @@ export const register = async (
   return await fetchApi("/register", "POST", { businessName, phoneNumber, licenseNumber, businessType })
 }
 
-export async function getBusiness(businessId: number) {
+export async function getBusiness(id: string) {
   try {
-    const response = await fetch(`/api/business/${businessId}`);
+    const response = await fetch(`/api/business/${id}`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    })
+
     if (!response.ok) {
-      throw new Error('Failed to fetch business details');
+      const errorData = await response.json()
+      throw new Error(errorData.error || 'Failed to fetch business details')
     }
-    const data = await response.json();
-    if (!data.success) {
-      throw new Error(data.error || 'Failed to fetch business details');
-    }
-    return data;
+
+    const data = await response.json()
+    return data
   } catch (error) {
-    console.error('Failed to fetch business details:', error);
-    throw error;
+    console.error('Error fetching business:', error)
+    throw error
   }
 }
 
@@ -143,6 +148,43 @@ export const getReviews = async (businessId: number) => {
     return data;
   } catch (error) {
     console.error('Failed to fetch reviews:', error);
+    throw error;
+  }
+};
+
+export const onboardBusiness = async (formData: FormData) => {
+  try {
+    const token = localStorage.getItem('token');
+    const businessId = localStorage.getItem('businessId');
+
+    if (!token || !businessId) {
+      throw new Error("Authentication credentials missing");
+    }
+
+    formData.append('businessId', businessId);
+
+    const response = await fetch('/api/business/onboard', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      },
+      body: formData
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.error || 'Failed to complete business setup');
+    }
+
+    const data = await response.json();
+    return {
+      success: true,
+      businessId: data.businessId,
+      businessType: localStorage.getItem('businessType'),
+      message: data.message
+    };
+  } catch (error) {
+    console.error("Onboarding error:", error);
     throw error;
   }
 };

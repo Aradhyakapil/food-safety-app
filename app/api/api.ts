@@ -122,26 +122,22 @@ export const sendOTP = async (phoneNumber: string) => {
   return { success: true, message: "OTP sent successfully" };
 }
 
-export const getBusiness = async (businessId: number) => {
+export const getBusiness = async (businessId: string | number) => {
   try {
-    const response = await fetch(`/api/business/${businessId}`, {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    });
-
+    const response = await fetch(`/api/business/${businessId}`)
     if (!response.ok) {
-      throw new Error('Failed to fetch business details');
+      throw new Error('Failed to fetch business details')
     }
-
-    const data = await response.json();
-    return data;
+    const data = await response.json()
+    return {
+      success: true,
+      data
+    }
   } catch (error) {
-    console.error('Failed to fetch business details:', error);
-    throw error;
+    console.error('Error fetching business:', error)
+    throw new Error('Failed to fetch business details')
   }
-};
+}
 
 export const getHygieneRatings = async (businessId: number) => {
   try {
@@ -289,39 +285,146 @@ export const createFacilityPhoto = async (
 
 export const onboardBusiness = async (formData: FormData) => {
   try {
-    const token = localStorage.getItem('token');
-    const businessId = localStorage.getItem('businessId');
-
-    if (!token || !businessId) {
-      throw new Error("Authentication credentials missing");
-    }
-
-    formData.append('businessId', businessId);
-
     const response = await fetch('/api/business/onboard', {
       method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${token}`,
-      },
       body: formData
-    });
+    })
 
     if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(errorData.error || 'Failed to complete business setup');
+      const errorData = await response.json()
+      throw new Error(errorData.error || 'Failed to complete business setup')
     }
 
-    const data = await response.json();
-    return {
-      success: true,
-      businessId: data.businessId,
-      businessType: localStorage.getItem('businessType'),
-      message: data.message
-    };
+    const data = await response.json()
+    return data
   } catch (error) {
-    console.error("Onboarding error:", error);
-    throw error;
+    console.error("Onboarding error:", error)
+    throw error
   }
-};
+}
+
+export const getManufacturingDetails = async (businessId: string | number) => {
+  try {
+    const { data, error } = await supabase
+      .from('manufacturing_details')
+      .select('*')
+      .eq('business_id', businessId)
+      .single()
+
+    if (error) throw error
+    return { success: true, data }
+  } catch (error) {
+    throw new Error('Failed to fetch manufacturing details')
+  }
+}
+
+export const updateManufacturingDetails = async (businessId: string, details: any) => {
+  try {
+    const { data, error } = await supabase
+      .from('manufacturing_details')
+      .update(details)
+      .eq('business_id', businessId)
+      .select()
+      .single()
+
+    if (error) throw error
+    return data
+  } catch (error) {
+    console.error('Error updating manufacturing details:', error)
+    throw new Error('Failed to update manufacturing details')
+  }
+}
+
+export const getBatchProduction = async (businessId: string) => {
+  try {
+    const { data, error } = await supabase
+      .from('batch_production')
+      .select('*')
+      .eq('business_id', businessId)
+      .order('created_at', { ascending: false })
+
+    if (error) throw error
+    return data
+  } catch (error) {
+    console.error('Error fetching batch production:', error)
+    throw new Error('Failed to fetch batch production details')
+  }
+}
+
+export const createBatchProduction = async (batchData: any) => {
+  try {
+    const { data, error } = await supabase
+      .from('batch_production')
+      .insert(batchData)
+      .select()
+      .single()
+
+    if (error) throw error
+    return data
+  } catch (error) {
+    console.error('Error creating batch production:', error)
+    throw new Error('Failed to create batch production')
+  }
+}
+
+export const getPackagingCompliance = async (businessId: string) => {
+  try {
+    const { data, error } = await supabase
+      .from('packaging_compliance')
+      .select('*')
+      .eq('business_id', businessId)
+      .single()
+
+    if (error) throw error
+    return data
+  } catch (error) {
+    console.error('Error fetching packaging compliance:', error)
+    throw new Error('Failed to fetch packaging compliance')
+  }
+}
+
+export const createPackagingCompliance = async (data: any) => {
+  try {
+    const { data: result, error } = await supabase
+      .from('packaging_compliance')
+      .insert(data)
+      .select()
+      .single()
+
+    if (error) throw error
+    return { success: true, data: result }
+  } catch (error) {
+    throw new Error('Failed to create packaging compliance')
+  }
+}
+
+export const getRawMaterialSuppliers = async (businessId: string | number) => {
+  try {
+    const { data, error } = await supabase
+      .from('raw_material_suppliers')
+      .select('*')
+      .eq('business_id', businessId)
+
+    if (error) throw error
+    return { success: true, data }
+  } catch (error) {
+    throw new Error('Failed to fetch raw material suppliers')
+  }
+}
+
+export const createRawMaterialSupplier = async (data: any) => {
+  try {
+    const { data: result, error } = await supabase
+      .from('raw_material_suppliers')
+      .insert(data)
+      .select()
+      .single()
+
+    if (error) throw error
+    return { success: true, data: result }
+  } catch (error) {
+    throw new Error('Failed to create raw material supplier')
+  }
+}
 
 
