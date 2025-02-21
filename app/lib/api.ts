@@ -43,19 +43,24 @@ export const register = async (
 
 export async function getBusiness(id: string) {
   try {
+    const token = localStorage.getItem('token')
+    if (!token) {
+      throw new Error('Authentication required')
+    }
+
     const response = await fetch(`/api/business/${id}`, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
-      },
+        'Authorization': `Bearer ${token}`
+      }
     })
 
+    const data = await response.json()
     if (!response.ok) {
-      const errorData = await response.json()
-      throw new Error(errorData.error || 'Failed to fetch business details')
+      throw new Error(data.error || 'Failed to fetch business details')
     }
 
-    const data = await response.json()
     return data
   } catch (error) {
     console.error('Error fetching business:', error)

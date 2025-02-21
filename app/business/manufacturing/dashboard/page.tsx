@@ -14,22 +14,45 @@ import { TeamSection } from "../../dashboard/components/team-section"
 import { FacilityPhotos } from "../../dashboard/components/facility-photos"
 import { ReviewsSection } from "../../dashboard/components/reviews-section"
 import { getBusiness } from "@/app/api/api"
+import { toast } from "@/components/ui/use-toast"
+import { useRouter } from "next/navigation"
 
 export default function ManufacturingDashboard() {
-  const [businessId, setBusinessId] = useState<number | null>(null)
+  const [businessId, setBusinessId] = useState<string | null>(null)
+  const router = useRouter()
 
   useEffect(() => {
     const fetchBusinessId = async () => {
       try {
-        // This is a placeholder. In a real app, you'd get the business ID from the user's session or URL
-        const response = await getBusiness(1)
-        setBusinessId(response.data.id)
+        const storedBusinessId = localStorage.getItem('businessId')
+        if (!storedBusinessId) {
+          toast({
+            title: "Error",
+            description: "Business ID not found",
+            variant: "destructive"
+          })
+          router.push('/business/auth')
+          return
+        }
+
+        const response = await getBusiness(storedBusinessId)
+        if (!response.success) {
+          throw new Error('Business not found')
+        }
+        setBusinessId(storedBusinessId)
       } catch (error) {
         console.error("Failed to fetch business details:", error)
+        toast({
+          title: "Error",
+          description: "Failed to load business details",
+          variant: "destructive"
+        })
+        router.push('/business/auth')
       }
     }
+
     fetchBusinessId()
-  }, [])
+  }, [router])
 
   if (!businessId) {
     return <div>Loading...</div>
