@@ -80,7 +80,14 @@ export default function BusinessAuthPage() {
       if (response.success) {
         localStorage.setItem("token", response.token);
         localStorage.setItem("businessType", signInForm.businessType);
-        router.push("/business/dashboard");
+        localStorage.setItem("businessId", response.businessId.toString());
+
+        // Redirect based on business type
+        const dashboardPath = signInForm.businessType === "manufacturer" 
+          ? "/business/manufacturing/dashboard"
+          : "/business/dashboard";
+        
+        router.push(dashboardPath);
       } else {
         throw new Error(response.error || "Login failed");
       }

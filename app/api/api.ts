@@ -124,17 +124,25 @@ export const sendOTP = async (phoneNumber: string) => {
 
 export const getBusiness = async (businessId: string | number) => {
   try {
-    const response = await fetch(`/api/business/${businessId}`)
+    const token = localStorage.getItem('token')
+    if (!token) {
+      throw new Error('No authentication token found')
+    }
+
+    const response = await fetch(`/api/business/${businessId}`, {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json'
+      }
+    })
+
     if (!response.ok) {
       throw new Error('Failed to fetch business details')
     }
+
     const data = await response.json()
-    return {
-      success: true,
-      data
-    }
+    return { success: true, data }
   } catch (error) {
-    console.error('Error fetching business:', error)
     throw new Error('Failed to fetch business details')
   }
 }
